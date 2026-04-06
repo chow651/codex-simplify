@@ -1,5 +1,7 @@
 # Codex Simplify Plugin
 
+[中文说明](./README.zh-CN.md)
+
 `simplify` is a Codex plugin and skill for final code cleanup review.
 
 It is designed for the end of a coding task, not the beginning. The goal is to review the current diff from three angles and tighten the result before you treat the work as finished:
