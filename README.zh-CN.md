@@ -29,18 +29,44 @@
 
 ## 安装方式
 
-先把仓库克隆到本地 Codex 插件目录：
+Windows PowerShell 一条命令安装：
 
 ```powershell
-git clone https://github.com/chow651/codex-simplify-plugin.git "$HOME\\plugins\\simplify"
+irm https://raw.githubusercontent.com/chow651/codex-simplify-plugin/master/scripts/install.ps1 | iex
 ```
 
-然后把插件加入本地 marketplace：
+macOS / Linux 一条命令安装：
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/chow651/codex-simplify-plugin/master/scripts/install.sh | bash
+```
+
+如果你希望安装时顺手把 completion gate 也加进全局 `AGENTS.md`，可以用下面两条：
+
+Windows PowerShell：
+
+```powershell
+& ([scriptblock]::Create((irm https://raw.githubusercontent.com/chow651/codex-simplify-plugin/master/scripts/install.ps1))) -WithGate
+```
+
+macOS / Linux：
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/chow651/codex-simplify-plugin/master/scripts/install.sh | SIMPLIFY_WITH_GATE=1 bash
+```
+
+安装脚本会自动完成这些事：
+
+- 把插件安装或更新到 `~/plugins/simplify`
+- 更新 `~/.agents/plugins/marketplace.json`
+- 把可见 skill 镜像写入 `~/.codex/skills/simplify/SKILL.md`
+- 可选地把 completion gate 写进 `~/.codex/AGENTS.md`
+
+如果你更想手动接入，也可以参考下面这些文件：
 
 - 目标文件：`~/.agents/plugins/marketplace.json`
 - 示例内容见：[examples/marketplace.json](./examples/marketplace.json)
-
-如果你当前还没有这个文件，可以直接按示例创建。
+- completion gate 片段见：[examples/AGENTS.snippet.md](./examples/AGENTS.snippet.md)
 
 ## 可选的自动触发
 

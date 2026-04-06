@@ -1,0 +1,159 @@
+param(
+  [string]$InstallHome = $HOME,
+  [string]$RepoUrl = "https://github.com/chow651/codex-simplify-plugin.git",
+  [string]$RepoSource = "",
+  [switch]$WithGate
+)
+
+$ErrorActionPreference = "Stop"
+
+function Ensure-Directory {
+  param([string]$Path)
+  if (-not (Test-Path -LiteralPath $Path)) {
+    New-Item -ItemType Directory -Path $Path -Force | Out-Null
+  }
+}
+
+function Sync-LocalRepo {
+  param(
+    [string]$Source,
+    [string]$Destination
+  )
+
+  Ensure-Directory -Path $Destination
+
+  Get-ChildItem -LiteralPath $Destination -Force -ErrorAction SilentlyContinue |
+    Where-Object { $_.Name -ne '.git' } |
+    Remove-Item -Recurse -Force
+
+  Get-ChildItem -LiteralPath $Source -Force |
+    Where-Object { $_.Name -ne '.git' } |
+    ForEach-Object {
+      Copy-Item -LiteralPath $_.FullName -Destination $Destination -Recurse -Force
+    }
+}
+
+function Sync-RemoteRepo {
+  param(
+    [string]$Remote,
+    [string]$Destination
+  )
+
+  if (Test-Path -LiteralPath (Join-Path $Destination '.git')) {
+    git -C $Destination pull --ff-only | Out-Null
+    return
+  }
+
+  if (Test-Path -LiteralPath $Destination) {
+    Remove-Item -LiteralPath $Destination -Recurse -Force
+  }
+
+  git clone $Remote $Destination | Out-Null
+}
+
+function Update-Marketplace {
+  param(
+    [string]$MarketplacePath
+  )
+
+  $entry = [ordered]@{
+    name = "simplify"
+    source = [ordered]@{
+      source = "local"
+      path = "./plugins/simplify"
+    }
+    policy = [ordered]@{
+      installation = "INSTALLED_BY_DEFAULT"
+      authentication = "ON_INSTALL"
+    }
+    category = "Coding"
+  }
+
+  if (-not (Test-Path -LiteralPath $MarketplacePath)) {
+    Ensure-Directory -Path (Split-Path -Parent $MarketplacePath)
+    $initial = [ordered]@{
+      name = "neo-local"
+      interface = [ordered]@{
+        displayName = "Neo Local"
+      }
+      plugins = @($entry)
+    }
+    $initial | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $MarketplacePath -Encoding UTF8
+    return
+  }
+
+  $marketplace = Get-Content -LiteralPath $MarketplacePath -Raw | ConvertFrom-Json -AsHashtable
+  if (-not $marketplace.ContainsKey('plugins')) {
+    $marketplace.plugins = @()
+  }
+
+  $existing = @($marketplace.plugins | Where-Object { $_.name -eq 'simplify' })
+  if ($existing.Count -gt 0) {
+    $marketplace.plugins = @($marketplace.plugins | Where-Object { $_.name -ne 'simplify' })
+  }
+
+  $marketplace.plugins += $entry
+  $marketplace | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $MarketplacePath -Encoding UTF8
+}
+
+function Install-SkillMirror {
+  param(
+    [string]$PluginRoot,
+    [string]$SkillMirrorPath
+  )
+
+  Ensure-Directory -Path (Split-Path -Parent $SkillMirrorPath)
+  Copy-Item -LiteralPath (Join-Path $PluginRoot 'skills\simplify\SKILL.md') -Destination $SkillMirrorPath -Force
+}
+
+function Install-GateSnippet {
+  param(
+    [string]$PluginRoot,
+    [string]$AgentsPath
+  )
+
+  $marker = '## Simplify Gate'
+  $snippetPath = Join-Path $PluginRoot 'examples\AGENTS.snippet.md'
+  $snippet = Get-Content -LiteralPath $snippetPath -Raw
+
+  if (-not (Test-Path -LiteralPath $AgentsPath)) {
+    $snippet | Set-Content -LiteralPath $AgentsPath -Encoding UTF8
+    return
+  }
+
+  $existing = Get-Content -LiteralPath $AgentsPath -Raw
+  if ($existing.Contains($marker)) {
+    return
+  }
+
+  $merged = ($existing.TrimEnd() + "`r`n`r`n" + $snippet.Trim() + "`r`n")
+  $merged | Set-Content -LiteralPath $AgentsPath -Encoding UTF8
+}
+
+$pluginRoot = Join-Path $InstallHome 'plugins\simplify'
+$marketplacePath = Join-Path $InstallHome '.agents\plugins\marketplace.json'
+$skillMirrorPath = Join-Path $InstallHome '.codex\skills\simplify\SKILL.md'
+$agentsPath = Join-Path $InstallHome '.codex\AGENTS.md'
+
+Ensure-Directory -Path (Join-Path $InstallHome 'plugins')
+
+if ($RepoSource) {
+  Sync-LocalRepo -Source $RepoSource -Destination $pluginRoot
+} else {
+  Sync-RemoteRepo -Remote $RepoUrl -Destination $pluginRoot
+}
+
+Update-Marketplace -MarketplacePath $marketplacePath
+Install-SkillMirror -PluginRoot $pluginRoot -SkillMirrorPath $skillMirrorPath
+
+if ($WithGate) {
+  Install-GateSnippet -PluginRoot $pluginRoot -AgentsPath $agentsPath
+}
+
+Write-Output "Installed simplify plugin to $pluginRoot"
+Write-Output "Updated marketplace: $marketplacePath"
+Write-Output "Installed visible skill mirror: $skillMirrorPath"
+if ($WithGate) {
+  Write-Output "Installed Simplify Gate into $agentsPath"
+}
+Write-Output "Restart Codex to load the plugin."

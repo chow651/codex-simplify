@@ -17,19 +17,42 @@ It is designed for the end of a coding task, not the beginning. The goal is to r
 
 ## Install
 
-Clone this repository into your local Codex plugins directory:
+One-command install on Windows PowerShell:
 
 ```powershell
-git clone https://github.com/chow651/codex-simplify-plugin.git "$HOME\\plugins\\simplify"
+irm https://raw.githubusercontent.com/chow651/codex-simplify-plugin/master/scripts/install.ps1 | iex
 ```
 
-Add the plugin to your local marketplace file `~/.agents/plugins/marketplace.json`.
+One-command install on macOS/Linux:
 
-An example entry is included at [examples/marketplace.json](./examples/marketplace.json).
+```bash
+curl -fsSL https://raw.githubusercontent.com/chow651/codex-simplify-plugin/master/scripts/install.sh | bash
+```
+
+Install with the optional completion gate enabled:
+
+Windows PowerShell:
+
+```powershell
+& ([scriptblock]::Create((irm https://raw.githubusercontent.com/chow651/codex-simplify-plugin/master/scripts/install.ps1))) -WithGate
+```
+
+macOS/Linux:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/chow651/codex-simplify-plugin/master/scripts/install.sh | SIMPLIFY_WITH_GATE=1 bash
+```
+
+What the installer does:
+
+- installs or updates the plugin at `~/plugins/simplify`
+- updates `~/.agents/plugins/marketplace.json`
+- installs a visible skill mirror at `~/.codex/skills/simplify/SKILL.md`
+- optionally appends the completion gate to `~/.codex/AGENTS.md`
 
 ## Optional completion gate
 
-If you want `simplify` to run automatically at the end of code tasks, add the snippet from [examples/AGENTS.snippet.md](./examples/AGENTS.snippet.md) to your global `AGENTS.md`.
+If you prefer to install the completion gate manually, use the snippet at [examples/AGENTS.snippet.md](./examples/AGENTS.snippet.md).
 
 This keeps the trigger scoped to code-task completion instead of letting the skill fire on unrelated conversations.
 
