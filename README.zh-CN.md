@@ -15,14 +15,20 @@
 
 | 项目 | 默认理解 |
 |---|---|
-| 核心产品 | [`skills/simplify/SKILL.md`](./skills/simplify/SKILL.md) |
+| 入口 skill | [`skills/using-simplify/SKILL.md`](./skills/using-simplify/SKILL.md) |
+| 清理协议 | [`skills/simplify/SKILL.md`](./skills/simplify/SKILL.md) |
 | Windows 最优路径 | skill + `AGENTS.md` gate |
 | macOS / Linux 最优路径 | skill + `AGENTS.md` gate + 可选 `Stop` hook |
 | plugin 的意义 | 降低安装和分发成本 |
 
 ## 它做什么
 
-当代码任务进入收尾阶段，`simplify` 会要求主 agent：
+当代码任务进入收尾阶段，分层后的工作流是：
+
+- `using-simplify` 负责识别收尾条件
+- `simplify` 负责执行清理协议
+
+具体的清理协议会要求主 agent：
 
 - 先把任务归类为 `feature`、`refactor`、`bugfix`
 - 再按任务类型选择正确审查轨道
@@ -100,6 +106,7 @@ Codex 的 hook 发现位置在 `~/.codex/hooks.json` 或 `<repo>/.codex/hooks.js
 
 这个仓库提供的是：
 
+- [using-simplify](./skills/using-simplify/SKILL.md)：收尾路由 skill
 - [SKILL.md](./skills/simplify/SKILL.md)：真正的 `simplify` 元技能
 - [AGENTS.snippet.md](./examples/AGENTS.snippet.md)：指令层收尾 gate
 - [simplify_stop_gate.py](./scripts/simplify_stop_gate.py)：Codex `Stop` hook 脚本
@@ -110,10 +117,11 @@ hook 是增强层，不是核心产品本身。skill 才是主产品。
 ## 典型使用流程
 
 1. 完成功能实现，并执行本来的验证。
-2. 针对当前 diff 调用 `simplify`。
-3. 运行对应的审查轨道。
-4. 修正值得修正的问题。
-5. 在结束前重新验证。
+2. 由 `using-simplify` 判断当前是否进入收尾阶段。
+3. 针对当前 diff 运行 `simplify`。
+4. 运行对应的审查轨道。
+5. 修正值得修正的问题。
+6. 在结束前重新验证。
 
 ## 为什么这个仓库仍然保留插件形态
 
@@ -121,7 +129,7 @@ hook 是增强层，不是核心产品本身。skill 才是主产品。
 
 如果你已经熟悉 Codex skills 的手工管理方式，可以把这个项目理解成：
 
-- 一份核心的 `simplify` skill
+- 一组分层的 `simplify` skills
 - 外加一个便于公开分发的安装器
 
 ## 许可证

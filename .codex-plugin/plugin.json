@@ -34,7 +34,7 @@
     "privacyPolicyURL": "https://github.com/chow651/codex-simplify-plugin",
     "termsOfServiceURL": "https://github.com/chow651/codex-simplify-plugin",
     "defaultPrompt": [
-      "在任务结束前对当前 diff 运行 simplify",
+      "在任务结束前先用 using-simplify 判断是否进入 simplify 协议",
       "用 simplify skill 在宣告完成前再收紧一轮这次任务",
       "先判断任务类型，再运行对应的 simplify 审查轨道"
     ],

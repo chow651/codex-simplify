@@ -99,11 +99,12 @@ function Update-Marketplace {
 function Install-SkillMirror {
   param(
     [string]$PluginRoot,
+    [string]$SkillRelativePath,
     [string]$SkillMirrorPath
   )
 
   Ensure-Directory -Path (Split-Path -Parent $SkillMirrorPath)
-  Copy-Item -LiteralPath (Join-Path $PluginRoot 'skills\simplify\SKILL.md') -Destination $SkillMirrorPath -Force
+  Copy-Item -LiteralPath (Join-Path $PluginRoot $SkillRelativePath) -Destination $SkillMirrorPath -Force
 }
 
 function Install-GateSnippet {
@@ -187,6 +188,7 @@ function Install-CodexHook {
 $pluginRoot = Join-Path $InstallHome 'plugins\simplify'
 $marketplacePath = Join-Path $InstallHome '.agents\plugins\marketplace.json'
 $skillMirrorPath = Join-Path $InstallHome '.codex\skills\simplify\SKILL.md'
+$usingSimplifyMirrorPath = Join-Path $InstallHome '.codex\skills\using-simplify\SKILL.md'
 $agentsPath = Join-Path $InstallHome '.codex\AGENTS.md'
 $codexHooksPath = Join-Path $InstallHome '.codex\hooks.json'
 
@@ -199,7 +201,8 @@ if ($RepoSource) {
 }
 
 Update-Marketplace -MarketplacePath $marketplacePath
-Install-SkillMirror -PluginRoot $pluginRoot -SkillMirrorPath $skillMirrorPath
+Install-SkillMirror -PluginRoot $pluginRoot -SkillRelativePath 'skills\simplify\SKILL.md' -SkillMirrorPath $skillMirrorPath
+Install-SkillMirror -PluginRoot $pluginRoot -SkillRelativePath 'skills\using-simplify\SKILL.md' -SkillMirrorPath $usingSimplifyMirrorPath
 
 if ($WithGate) {
   Install-GateSnippet -PluginRoot $pluginRoot -AgentsPath $agentsPath
@@ -209,6 +212,7 @@ if ($WithGate) {
 Write-Output "Installed simplify plugin to $pluginRoot"
 Write-Output "Updated marketplace: $marketplacePath"
 Write-Output "Installed visible skill mirror: $skillMirrorPath"
+Write-Output "Installed visible skill mirror: $usingSimplifyMirrorPath"
 if ($WithGate) {
   Write-Output "Installed Simplify Gate into $agentsPath"
   Write-Output "Configured Codex Stop hook in $codexHooksPath when supported by the current platform"

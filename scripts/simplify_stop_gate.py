@@ -54,8 +54,10 @@ REVIEW_ONLY_PATTERNS = [
 
 SIMPLIFY_SUMMARY_PATTERNS = [
     re.compile(r"\bsimplify\b", re.IGNORECASE),
+    re.compile(r"\busing-simplify\b", re.IGNORECASE),
     re.compile(r"维护债清理"),
     re.compile(r"收尾审查"),
+    re.compile(r"收尾路由"),
 ]
 
 SIMPLIFY_RESOLUTION_PATTERNS = [

@@ -15,14 +15,20 @@
 
 | Area | Default path |
 |---|---|
-| Core product | [`skills/simplify/SKILL.md`](./skills/simplify/SKILL.md) |
+| Entry skill | [`skills/using-simplify/SKILL.md`](./skills/using-simplify/SKILL.md) |
+| Cleanup protocol | [`skills/simplify/SKILL.md`](./skills/simplify/SKILL.md) |
 | Best Windows setup | Skill + `AGENTS.md` gate |
 | Best macOS/Linux setup | Skill + `AGENTS.md` gate + optional Codex `Stop` hook |
 | What the plugin adds | Easier install, marketplace entry, skill mirror, optional gates |
 
 ## What It Does
 
-When a code task is being wrapped up, `simplify` asks the main agent to:
+When a code task is being wrapped up, the layered workflow is:
+
+- `using-simplify` detects finish-line conditions
+- `simplify` runs the cleanup protocol
+
+The cleanup protocol asks the main agent to:
 
 - classify the task as `feature`, `refactor`, or `bugfix`
 - review the current task scope through the right tracks
@@ -98,6 +104,7 @@ Codex hook discovery lives in `~/.codex/hooks.json` or `<repo>/.codex/hooks.json
 
 This repo ships:
 
+- [using-simplify](./skills/using-simplify/SKILL.md): finish-line router skill
 - [SKILL.md](./skills/simplify/SKILL.md): the actual simplify meta-skill
 - [AGENTS.snippet.md](./examples/AGENTS.snippet.md): instruction-layer finish-line gate
 - [simplify_stop_gate.py](./scripts/simplify_stop_gate.py): Codex `Stop` hook script
@@ -108,10 +115,11 @@ The hook is optional. The skill is the core product.
 ## Typical Workflow
 
 1. Finish the main implementation and run your normal verification.
-2. Invoke `simplify` on the current diff.
-3. Run the matching review tracks.
-4. Fix worthwhile findings.
-5. Re-verify before stopping.
+2. Let `using-simplify` decide whether closure conditions require simplify.
+3. Run `simplify` on the current diff.
+4. Run the matching review tracks.
+5. Fix worthwhile findings.
+6. Re-verify before stopping.
 
 ## Why This Repo Is A Plugin At All
 
@@ -119,7 +127,7 @@ Because plugins are useful for **distribution**, not because the skill needs a p
 
 If you already know how to manage Codex skills manually, you can think of this repo as:
 
-- a strong `simplify` skill
+- a layered simplify skill system
 - plus a convenience installer
 
 ## License

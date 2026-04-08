@@ -9,6 +9,7 @@ WITH_GATE="${SIMPLIFY_WITH_GATE:-0}"
 plugin_root="$INSTALL_HOME/plugins/simplify"
 marketplace_path="$INSTALL_HOME/.agents/plugins/marketplace.json"
 skill_mirror_path="$INSTALL_HOME/.codex/skills/simplify/SKILL.md"
+using_simplify_mirror_path="$INSTALL_HOME/.codex/skills/using-simplify/SKILL.md"
 agents_path="$INSTALL_HOME/.codex/AGENTS.md"
 codex_hooks_path="$INSTALL_HOME/.codex/hooks.json"
 
@@ -50,6 +51,8 @@ PY
 
 mkdir -p "$(dirname "$skill_mirror_path")"
 cp "$plugin_root/skills/simplify/SKILL.md" "$skill_mirror_path"
+mkdir -p "$(dirname "$using_simplify_mirror_path")"
+cp "$plugin_root/skills/using-simplify/SKILL.md" "$using_simplify_mirror_path"
 
 if [[ "$WITH_GATE" == "1" ]]; then
   mkdir -p "$(dirname "$agents_path")"
@@ -108,6 +111,7 @@ fi
 echo "Installed simplify plugin to $plugin_root"
 echo "Updated marketplace: $marketplace_path"
 echo "Installed visible skill mirror: $skill_mirror_path"
+echo "Installed visible skill mirror: $using_simplify_mirror_path"
 if [[ "$WITH_GATE" == "1" ]]; then
   echo "Installed Simplify Gate into $agents_path"
   echo "Configured Codex Stop hook in $codex_hooks_path when supported by the current platform"

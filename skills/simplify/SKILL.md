@@ -1,17 +1,11 @@
 ---
 name: simplify
-description: Use when a code task is being wrapped up or the agent is about to claim completion while task-related code changes still exist.
+description: Use when running the simplify cleanup protocol on task-related code changes during code-task closure.
 ---
 
 <SUBAGENT-STOP>
 If you were dispatched as a read-only reviewer, advisor, or analyst without code ownership for the current task, skip this skill.
 </SUBAGENT-STOP>
-
-<EXTREMELY-IMPORTANT>
-If you are about to claim completion on a code task and task-related code changes still exist, you MUST run simplify or explicitly state why simplify is being skipped.
-
-You do not have the option to silently skip this.
-</EXTREMELY-IMPORTANT>
 
 # Simplify
 
@@ -21,13 +15,11 @@ Simplify is a finish-line discipline for code tasks.
 
 Its job is to reduce future maintenance debt before you treat the current task as finished.
 
-This skill is for the stage after the main implementation works and before you conclude the task.
-
-Whether simplify was triggered by the user, by standing instructions, or by an external stop gate, the protocol is the same.
+This skill is the execution protocol that runs after `using-simplify`, a user request, or a standing instruction has already decided simplify should happen.
 
 ## When To Use
 
-Run `simplify` when all of these are true:
+Run `simplify` when the current task has already been routed into simplify and all of these are true:
 
 - the current task is code work, refactor work, bug-fix work, debugging follow-up, testing implementation, architecture implementation, or engineering implementation
 - you are wrapping up the task, preparing to stop, or preparing to claim completion
