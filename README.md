@@ -8,7 +8,7 @@
 > A skill-first finish-line discipline for Codex.<br>
 > Route through `using-simplify`, then run `simplify`, before calling a code task done.
 
-`Codex Simplify` is a small skill bundle for task closure. This repository intentionally ships only the two skills, the `AGENTS.md` gate snippet, and protocol notes.
+`Codex Simplify` is a small skill bundle for task closure. It can now be installed as a global npm CLI, while still shipping the raw skills and the `AGENTS.md` gate snippet in this repository.
 
 ## At A Glance
 
@@ -19,7 +19,7 @@
 | Gate snippet | [`examples/AGENTS.snippet.md`](./examples/AGENTS.snippet.md) |
 | Protocol history | [`CHANGELOG.md`](./CHANGELOG.md) |
 | Review modes | Lite / Standard / Strict |
-| Recommended setup | Copy both skills and append the gate snippet |
+| Recommended setup | `npm i -g github:chow651/codex-simplify` then `codex-simplify install` |
 
 ## Versioning And Upgrades
 
@@ -47,6 +47,27 @@ This repo ships:
 - [simplify](./skills/simplify/SKILL.md): cleanup protocol executor
 - [AGENTS.snippet.md](./examples/AGENTS.snippet.md): optional instruction-layer gate
 - [CHANGELOG.md](./CHANGELOG.md): protocol history
+
+## Install
+
+Global npm install from GitHub:
+
+```bash
+npm i -g github:chow651/codex-simplify
+codex-simplify install
+```
+
+Optional flags:
+
+```bash
+codex-simplify install --no-gate
+codex-simplify install --target ~/.codex
+codex-simplify install --agents ~/.codex/AGENTS.md
+```
+
+The default install copies both skills into `~/.codex/skills` and appends `## Simplify Gate` to `~/.codex/AGENTS.md` only when that block is not already present.
+
+If you later publish the package to the npm registry, the command can be shortened to `npm i -g codex-simplify`.
 
 ## Manual Install
 

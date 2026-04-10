@@ -2,6 +2,12 @@
 
 All notable protocol changes for the `simplify` skill set are recorded here.
 
+## [0.3.0] - 2026-04-10
+
+- added the `codex-simplify` npm CLI for global installation
+- introduced `codex-simplify install` with default skill copy plus gate append behavior
+- documented npm-first installation while keeping manual installation available
+
 ## [0.2.1] - 2026-04-10
 
 - removed repository distribution scaffolding, setup scripts, automation gate code, and internal design artifacts from the published tree

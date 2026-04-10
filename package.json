@@ -1,0 +1,25 @@
+{
+  "name": "codex-simplify",
+  "version": "0.3.0",
+  "description": "Install the Codex Simplify skill bundle into ~/.codex",
+  "license": "MIT",
+  "bin": {
+    "codex-simplify": "bin/codex-simplify.js"
+  },
+  "files": [
+    "bin/",
+    "lib/",
+    "skills/",
+    "examples/AGENTS.snippet.md",
+    "README.md",
+    "README.zh-CN.md",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

@@ -8,7 +8,7 @@
 > 面向 Codex 收尾阶段的 skill-first 清理协议。<br>
 > 在宣称代码任务完成之前，先经过 `using-simplify` 与 `simplify`。
 
-`Codex Simplify` 是一组用于任务收尾的小型 skill 套件。这个仓库现在只保留两份 skill、`AGENTS.md` gate 片段和协议说明。
+`Codex Simplify` 是一组用于任务收尾的小型 skill 套件。现在既可以作为全局 npm CLI 安装，也保留了仓库里的原始 skill 与 `AGENTS.md` gate 片段。
 
 ## 一眼看懂
 
@@ -19,7 +19,7 @@
 | Gate 片段 | [`examples/AGENTS.snippet.md`](./examples/AGENTS.snippet.md) |
 | 协议历史 | [`CHANGELOG.md`](./CHANGELOG.md) |
 | 审查模式 | Lite / Standard / Strict |
-| 推荐安装方式 | 同时复制两份 skill，并追加 gate 片段 |
+| 推荐安装方式 | `npm i -g github:chow651/codex-simplify` 后执行 `codex-simplify install` |
 
 ## 版本与升级
 
@@ -47,6 +47,27 @@ Breaking change 规则：
 - [simplify](./skills/simplify/SKILL.md)：清理协议执行 skill
 - [AGENTS.snippet.md](./examples/AGENTS.snippet.md)：可选的指令层 gate
 - [CHANGELOG.md](./CHANGELOG.md)：协议历史
+
+## 安装
+
+通过 GitHub 进行全局 npm 安装：
+
+```bash
+npm i -g github:chow651/codex-simplify
+codex-simplify install
+```
+
+可选参数：
+
+```bash
+codex-simplify install --no-gate
+codex-simplify install --target ~/.codex
+codex-simplify install --agents ~/.codex/AGENTS.md
+```
+
+默认安装行为是：把两份 skill 复制到 `~/.codex/skills`，并且只在目标文件还没有 `## Simplify Gate` 这段内容时，追加到 `~/.codex/AGENTS.md`。
+
+如果后续把这个包正式发布到 npm registry，安装命令就可以缩短成 `npm i -g codex-simplify`。
 
 ## 手工安装
 
