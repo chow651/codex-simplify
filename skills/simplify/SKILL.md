@@ -25,13 +25,9 @@ Simplify runs in one of three modes:
 - `Standard`
 - `Strict`
 
-If the caller did not choose a mode, stop and choose one before continuing.
+`using-simplify` must choose the mode before this skill starts.
 
-Mode selection order is fixed:
-
-1. `Strict` if any strict signal is present
-2. `Lite` only if all lite signals are satisfied
-3. `Standard` for everything else
+If the caller did not provide a mode, stop and return to `using-simplify`. Do not re-decide mode here.
 
 ## When To Use
 
@@ -56,6 +52,8 @@ You may skip `simplify` only when at least one of these is true:
 - the user explicitly told you to stop before cleanup
 
 If you skip, say so explicitly and give the reason.
+
+If you are thinking "the diff is probably fine" or "I already looked once", that is not a skip condition. Continue into the protocol.
 
 ## Meaningful Diff
 
@@ -120,31 +118,9 @@ If the task began as debugging, testing, or architecture implementation, map it 
 
 ## Step 2: Confirm The Mode
 
-Use the same objective signals every time.
-
-### Strict Signals
-
-Use `Strict` when any of these is true:
-
-- 6 or more files are touched
-- build or runtime configuration changed
-- dependency manifests changed
-- tests changed in a way that expands or reshapes verification scope
-- shared or public modules changed
-- hook configuration changed
-- plugin manifest changed
-- user-visible behavior changed across multiple call sites
+Read the chosen mode and execute the corresponding branch.
 
 ### Lite
-
-Use `Lite` when the change is local and low-risk.
-
-Lite applies only when all of these are true:
-
-- 1 or 2 files are touched
-- no shared or public module is changed
-- no build, runtime, dependency, hook, or plugin configuration is changed
-- no test strategy change is needed
 
 Lite focuses on only three questions:
 
@@ -156,13 +132,9 @@ Lite output should stay short.
 
 ### Standard
 
-Use `Standard` for the normal case.
-
-This is the default mode for ordinary feature, bugfix, and refactor closure.
+Standard is the default branch for ordinary feature, bugfix, and refactor closure.
 
 ### Strict
-
-Use `Strict` for high-risk or wide-scope changes.
 
 Strict means:
 
@@ -190,7 +162,13 @@ For `bugfix`:
 - `repo_fit`
 - `quality`
 
-Add `efficiency` only when the task touches hot paths, loops, rendering, repeated data work, concurrency, or clearly wasteful repeated work.
+Add `efficiency` only when the diff shows at least one objective signal such as:
+
+- new or modified function calls inside a loop body
+- a changed helper or utility used from multiple call sites
+- new I/O or network calls
+- changed rendering work in code that runs repeatedly
+- repeated data transformation added inside an already repeated path
 
 ## Track Meanings
 
@@ -276,6 +254,19 @@ Keep the finding count proportional to the mode:
 - `Standard`: at most 5 findings total
 - `Strict`: at most 8 findings total
 
+Status semantics:
+
+- `no_issues`: the reviewer inspected the assigned scope and found nothing worth carrying forward
+- `ok`: the reviewer inspected the assigned scope and is returning one or more findings
+- `blocked`: the reviewer could not complete the assigned review and must say why
+
+Lite merge rule:
+
+- merge all reviewer findings first
+- discard Lite findings below `P1`
+- if more than 2 findings remain, sort by `severity` first and `fix_cost` second
+- keep the top 2 only
+
 Use this structure for findings:
 
 ```yaml
@@ -338,6 +329,8 @@ Fix:
 
 If no finding survives triage, conclude `no cleanup needed` and state why.
 
+If you are thinking "there should probably be at least one finding", that is not a triage rule. `No cleanup needed` is allowed when the evidence supports it.
+
 Do not:
 
 - broaden the task
@@ -374,6 +367,15 @@ Report:
 - kept findings
 - reasons for kept findings
 - verification run after cleanup
+
+Before reporting:
+
+- [ ] task was classified as feature, refactor, or bugfix
+- [ ] mode was confirmed from the caller
+- [ ] tracks were selected and run
+- [ ] findings were merged and triaged
+- [ ] must-fix findings were addressed or explicitly absent
+- [ ] verification was rerun after cleanup or explicitly justified as unnecessary
 
 ## Red Flags
 

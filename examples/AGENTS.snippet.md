@@ -9,13 +9,15 @@
 - `Strict` 触发信号包括：改动 6 个及以上文件、改动构建或运行配置、改动依赖清单、改动测试并扩大验证范围、改动共享或公共模块、改动 hook 配置、改动插件清单、跨多个调用面改变用户可见行为。
 - `Lite` 只用于局部低风险改动：通常是 1 到 2 个文件，且没有共享模块、配置、依赖、hook、插件清单或验证策略层面的变化。
 - 只读审查、分析、规划、建议类子 agent 默认不承担 `simplify` 收尾责任；只有拥有实现责任或代码修改责任的 agent 才需要在结束前完成这一步。
-- `using-simplify` 负责判断收尾条件与跳过条件；`simplify` 负责执行完整清理协议。
+- `using-simplify` 负责判断收尾条件、跳过条件和 mode；`simplify` 只接受已确定的 mode 执行协议，不再重复判定 mode。
 - `simplify` 允许输出 `no cleanup needed`，但必须同时给出证据，例如：改动局部、沿用仓库已有模式、没有新增冗余状态或抽象、受影响路径已有足够验证。
 - 触发 `simplify` 时，先判断任务类型，只能在 `feature`、`refactor`、`bugfix` 三类里选择一个。
 - 如果工作起点是调试、测试或架构实现，收尾时也要映射到上述三类中的一个，再决定审查轨道。
 - `feature` 默认审查 `repo_fit`、`quality`、`reuse`；`refactor` 默认审查 `quality`、`repo_fit`、`reuse`；`bugfix` 默认审查 `blast_radius`、`repo_fit`、`quality`。
 - `efficiency` 只在热路径、循环、重复计算、渲染链路、并发链路或明显存在浪费工作时加入，不作为每次必跑项。
 - `simplify` 返回的结论必须收敛到 `must_fix`、`fix_if_cheap`、`note_only` 三档，禁止把全部建议一律视为应修项。
+- `no_issues` 表示 reviewer 已完成检查但没有值得上报的问题；`ok` 表示 reviewer 已完成检查且返回了问题；`blocked` 表示 reviewer 无法完成检查并必须写清原因。
+- Lite 模式下先 merge 全部 findings，再丢弃低于 `P1` 的结论；如果仍超过 2 条，按 `severity` 再按 `fix_cost` 排序截断到 2 条。
 - `must_fix` 优先覆盖行为风险、仓库模式漂移、重复实现、结构性维护债；`fix_if_cheap` 只处理收益明确且不扩范围的问题；`note_only` 只记录，不阻塞当前交付。
 - `simplify` 修正完成后，必须按“受影响路径验证 -> 任务级验证 -> 必要时更大范围验证”的顺序重跑验证，并在收尾时说明：模式、任务类型、审查轨道、是否无需清理、无需清理证据、已修问题、保留问题、保留理由、验证结果。
 - 如果 Codex `Stop` hook 已经拦截收尾，仍然按上述格式完成收束，不把 hook 当成替代主线程判断的机制。

@@ -23,6 +23,24 @@ You do not have the option to silently skip this.
 
 It does not perform the cleanup protocol itself. Its job is to detect closure conditions, choose the right simplify mode, and route into the full `simplify` skill.
 
+## Invocation Contract
+
+In the current environment, `invoke simplify` means:
+
+1. load the `simplify` skill immediately
+2. pass in the already chosen mode
+3. pass in the already chosen task type when known
+4. pass in the current task scope and mode reasons
+5. do not re-decide mode inside `simplify`
+
+Required handoff data:
+
+- selected mode: `Lite`, `Standard`, or `Strict`
+- task type: `feature`, `refactor`, or `bugfix`
+- mode reasons
+- current task scope
+- skip status, if skipped
+
 ## When To Use
 
 Use this skill when all of these are true:
@@ -45,6 +63,8 @@ You may skip `simplify` only when at least one of these is true:
 - the user explicitly told you to stop before cleanup
 
 If you skip, say so explicitly and give the reason.
+
+If you are thinking "the diff is probably fine" or "I already looked once", that is not a skip condition. Continue to objective signal selection.
 
 ## Objective Signals
 
