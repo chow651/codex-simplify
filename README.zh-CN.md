@@ -1,64 +1,101 @@
 # Codex Simplify
 
 [![Skill-first](https://img.shields.io/badge/shape-skill--first-111111?style=flat-square)](./skills/simplify/SKILL.md)
-[![Windows](https://img.shields.io/badge/windows-AGENTS%20gate-0A7A3F?style=flat-square)](./examples/AGENTS.snippet.md)
-[![macOS%2FLinux](https://img.shields.io/badge/macos%2Flinux-optional%20Stop%20hook-1F6FEB?style=flat-square)](./examples/codex.hooks.json)
+[![AGENTS gate](https://img.shields.io/badge/gate-AGENTS.md-0A7A3F?style=flat-square)](./examples/AGENTS.snippet.md)
 
 [English README](./README.md)
 
 > 面向 Codex 收尾阶段的 skill-first 清理协议。<br>
-> 在任务结束前，把代码任务再收紧一轮。
+> 在宣称代码任务完成之前，先经过 `using-simplify` 与 `simplify`。
 
-`simplify` 的主产品形态是 **Codex skill**。插件层主要负责安装和分发，真正有价值的核心，是那份在任务收尾时执行维护债清理协议的 skill。
+`Codex Simplify` 是一组用于任务收尾的小型 skill 套件。这个仓库现在只保留两份 skill、`AGENTS.md` gate 片段和协议说明。
 
 ## 一眼看懂
 
-| 项目 | 默认理解 |
+| 项目 | 路径 |
 |---|---|
 | 入口 skill | [`skills/using-simplify/SKILL.md`](./skills/using-simplify/SKILL.md) |
 | 清理协议 | [`skills/simplify/SKILL.md`](./skills/simplify/SKILL.md) |
+| Gate 片段 | [`examples/AGENTS.snippet.md`](./examples/AGENTS.snippet.md) |
+| 协议历史 | [`CHANGELOG.md`](./CHANGELOG.md) |
 | 审查模式 | Lite / Standard / Strict |
-| Windows 最优路径 | skill + `AGENTS.md` gate |
-| macOS / Linux 最优路径 | skill + `AGENTS.md` gate + 可选 `Stop` hook |
-| plugin 的意义 | 降低安装和分发成本 |
+| 推荐安装方式 | 同时复制两份 skill，并追加 gate 片段 |
 
-## 它做什么
+## 版本与升级
 
-当代码任务进入收尾阶段，分层后的工作流是：
+当前协议版本：`0.2.1`
 
-- `using-simplify` 负责识别收尾条件
-- `simplify` 负责执行清理协议
+版本信息放在 skill 正文和 [CHANGELOG.md](./CHANGELOG.md) 里，不写进 frontmatter。原因是当前 Codex skill frontmatter 兼容格式只保留 `name` 和 `description`。
 
-具体的清理协议会要求主 agent：
+升级规则：
 
-- 先把任务归类为 `feature`、`refactor`、`bugfix`
-- 再按任务类型选择正确审查轨道
-- 再把问题收敛到 `must_fix`、`fix_if_cheap`、`note_only`
-- 最后重新验证，再决定是否结束
+- [`skills/using-simplify/SKILL.md`](./skills/using-simplify/SKILL.md) 与 [`skills/simplify/SKILL.md`](./skills/simplify/SKILL.md) 必须一起替换
+- 只要协议版本变化，就同步刷新 [`examples/AGENTS.snippet.md`](./examples/AGENTS.snippet.md) 的已安装副本
+- 不要混用不同版本的 router 和 executor
 
-核心审查轨道：
+Breaking change 规则：
 
-- `repo_fit`
-- `quality`
-- `reuse`
-- `blast_radius`
-- `efficiency`
+- 当 mode 判断顺序、router 向 executor 传递的字段、任务分类、finding contract 语义、收尾报告必填项发生会改变 agent 行为的变化时，升级 major 版本
+- 只增加澄清说明或补充客观触发信号、但不改变核心协议时，升级 minor 版本
+- 只修正文案或仓库包装方式、不改变预期执行行为时，升级 patch 版本
 
-其中 `efficiency` 只在性能相关场景下加入。
+## 仓库内容
 
-## 审查模式
+这个仓库提供：
 
-| 模式 | 适用场景 | 结果 |
-|---|---|---|
-| `Skip` | 没有有效的行为性改动 | 明确写出跳过依据 |
-| `Lite` | 小范围、低风险、局部改动 | 短审查 + 最小必要验证 |
-| `Standard` | 正常 feature / bugfix / refactor 收尾 | 执行标准清理协议 |
-| `Strict` | 高风险或大范围改动 | 提高审查强度与验证范围 |
+- [using-simplify](./skills/using-simplify/SKILL.md)：收尾路由 skill
+- [simplify](./skills/simplify/SKILL.md)：清理协议执行 skill
+- [AGENTS.snippet.md](./examples/AGENTS.snippet.md)：可选的指令层 gate
+- [CHANGELOG.md](./CHANGELOG.md)：协议历史
+
+## 手工安装
+
+从本地克隆后的仓库目录执行：
+
+Windows PowerShell：
+
+```powershell
+New-Item -ItemType Directory -Force "$HOME\.codex\skills" | Out-Null
+Copy-Item -Recurse -Force .\skills\using-simplify "$HOME\.codex\skills\"
+Copy-Item -Recurse -Force .\skills\simplify "$HOME\.codex\skills\"
+New-Item -ItemType File -Force "$HOME\.codex\AGENTS.md" | Out-Null
+Get-Content .\examples\AGENTS.snippet.md | Add-Content "$HOME\.codex\AGENTS.md"
+```
+
+macOS / Linux：
+
+```bash
+mkdir -p ~/.codex/skills
+cp -R skills/using-simplify ~/.codex/skills/
+cp -R skills/simplify ~/.codex/skills/
+touch ~/.codex/AGENTS.md
+cat examples/AGENTS.snippet.md >> ~/.codex/AGENTS.md
+```
+
+如果你更希望规则只在某个项目里生效，可以把片段追加到仓库内的 `AGENTS.md`，不写入全局目录。
+
+## 工作方式
+
+当代码任务进入收尾阶段：
+
+1. `using-simplify` 先判断当前属于 `Skip`、`Lite`、`Standard` 还是 `Strict`。
+2. `simplify` 再按该模式审查当前任务范围。
+3. findings 会被收敛到 `must_fix`、`fix_if_cheap`、`note_only`。
+4. 受影响路径重新验证后，才能宣称完成。
 
 `Skip` 和 `无需清理` 不是一回事：
 
 - `Skip`：没有值得进入 simplify 的目标
 - `无需清理`：已经运行了 simplify，但没有发现值得处理的问题
+
+## 审查模式
+
+| 模式 | 适用场景 | 结果 |
+|---|---|---|
+| `Skip` | 纯文档、纯注释、纯格式化、无关元数据，或没有行为性改动 | 明确写出跳过依据 |
+| `Lite` | 1 到 2 个局部低风险文件，且没有共享模块、配置、manifest 或验证范围变化 | 短审查 + 最小必要验证 |
+| `Standard` | 正常 feature / bugfix / refactor 收尾 | 执行标准清理协议 |
+| `Strict` | 高风险或大范围改动 | 提高审查强度与验证范围 |
 
 `Strict` 的客观触发信号包括：
 
@@ -67,110 +104,16 @@
 - 改动依赖清单
 - 改动共享或公共模块
 - 改动测试并扩大验证范围
-- 改动 hook 或插件清单
+- 改动 agent 行为配置或 manifest 文件
 - 跨多个调用面改变用户可见行为
 
-`无需清理` 只有在这些证据都成立时才有效：
+## 典型流程
 
-- 改动保持局部
-- 沿用仓库已有模式
-- 没有新增不必要的抽象、状态或重复实现
-- 受影响路径已有足够验证
-
-## 快速开始
-
-### 安装 Skill 套件
-
-Windows PowerShell：
-
-```powershell
-irm https://raw.githubusercontent.com/chow651/codex-simplify-plugin/master/scripts/install.ps1 | iex
-```
-
-macOS / Linux：
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/chow651/codex-simplify-plugin/master/scripts/install.sh | bash
-```
-
-### 安装并启用收尾 Gate
-
-Windows PowerShell：
-
-```powershell
-& ([scriptblock]::Create((irm https://raw.githubusercontent.com/chow651/codex-simplify-plugin/master/scripts/install.ps1))) -WithGate
-```
-
-macOS / Linux：
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/chow651/codex-simplify-plugin/master/scripts/install.sh | SIMPLIFY_WITH_GATE=1 bash
-```
-
-## 三种使用方式
-
-| 模式 | 适合谁 | 额外增加什么 |
-|---|---|---|
-| 只用 Skill | 熟悉 Codex、想手动调用的人 | 只有 skill 本体 |
-| Skill + `AGENTS.md` gate | Windows 用户、希望规则更稳定的人 | 把 `Simplify Gate` 追加到 `~/.codex/AGENTS.md` |
-| Skill + `AGENTS.md` gate + Codex `Stop` hook | macOS / Linux 用户、想多一道原生门槛的人 | 另外把 `Stop` hook 写入 `~/.codex/hooks.json` |
-
-## 平台说明
-
-| 平台 | Skill | `AGENTS.md` gate | Codex `Stop` hook |
-|---|---|---|---|
-| Windows | 可用 | 推荐作为主路径 | 当前不可用 |
-| macOS / Linux | 可用 | 有价值 | 可作为额外门槛 |
-
-按 OpenAI 当前的 Codex hooks 文档，Windows 下 hooks 仍然是禁用状态。所以对 Windows 用户来说，真正可依赖的路径是：**skill + `AGENTS.md` gate**。
-
-## 安装脚本实际会写什么
-
-- plugin：`~/plugins/simplify`
-- marketplace：`~/.agents/plugins/marketplace.json`
-- 可见 skill 镜像：`~/.codex/skills/using-simplify/SKILL.md`
-- 可见 skill 镜像：`~/.codex/skills/simplify/SKILL.md`
-- 可选指令层 gate：`~/.codex/AGENTS.md`
-- 可选 Codex hook：`~/.codex/hooks.json`
-
-## Hook 配置
-
-Codex 的 hook 发现位置在 `~/.codex/hooks.json` 或 `<repo>/.codex/hooks.json`，不在插件清单里。
-
-这个仓库提供的是：
-
-- [using-simplify](./skills/using-simplify/SKILL.md)：收尾路由 skill
-- [SKILL.md](./skills/simplify/SKILL.md)：真正的 `simplify` 元技能
-- [AGENTS.snippet.md](./examples/AGENTS.snippet.md)：指令层收尾 gate
-- [simplify_stop_gate.py](./scripts/simplify_stop_gate.py)：Codex `Stop` hook 脚本
-- [codex.hooks.json](./examples/codex.hooks.json)：Codex hook 配置示例
-
-hook 是增强层，不是核心产品本身。skill 才是主产品。
-
-## 典型使用流程
-
-1. 完成功能实现，并执行本来的验证。
-2. 由 `using-simplify` 判断当前是 `Skip`、`Lite`、`Standard` 还是 `Strict`。
-3. 如果没有跳过，再针对当前 diff 运行 `simplify`。
-4. 运行对应的审查轨道。
-5. 输出 `无需清理` 或修正值得修正的问题。
-6. 在结束前重新验证。
-
-## Worked Examples
-
-- [Feature / Standard：分层 skill 结构](./examples/cases/feature-standard-closure.md)
-- [Bugfix：旧版 PowerShell 安装器兼容](./examples/cases/bugfix-closure.md)
-- [Lite / 无需清理：局部收尾](./examples/cases/lite-no-cleanup-needed.md)
-- [Strict：hook、安装器与 gate 联动](./examples/cases/strict-closure.md)
-
-## 为什么这个仓库仍然保留插件形态
-
-因为 plugin 解决的是**分发问题**，不是**能力问题**。
-
-如果你已经熟悉 Codex skills 的手工管理方式，可以把这个项目理解成：
-
-- 一组分层的 `simplify` skills
-- 外加一个便于公开分发的安装器
+1. 完成功能实现，并执行正常验证。
+2. 由 `using-simplify` 判断模式。
+3. 由 `simplify` 审查当前任务范围。
+4. 修正值得修正的问题。
+5. 重新验证后再结束任务。
 
 ## 许可证
 

@@ -1,61 +1,99 @@
 # Codex Simplify
 
 [![Skill-first](https://img.shields.io/badge/shape-skill--first-111111?style=flat-square)](./skills/simplify/SKILL.md)
-[![Windows](https://img.shields.io/badge/windows-AGENTS%20gate-0A7A3F?style=flat-square)](./examples/AGENTS.snippet.md)
-[![macOS%2FLinux](https://img.shields.io/badge/macos%2Flinux-optional%20Stop%20hook-1F6FEB?style=flat-square)](./examples/codex.hooks.json)
+[![AGENTS gate](https://img.shields.io/badge/gate-AGENTS.md-0A7A3F?style=flat-square)](./examples/AGENTS.snippet.md)
 
 [中文说明](./README.zh-CN.md)
 
 > A skill-first finish-line discipline for Codex.<br>
-> Tighten a code task before you call it done.
+> Route through `using-simplify`, then run `simplify`, before calling a code task done.
 
-`simplify` is primarily a **Codex skill**. The plugin layer exists to make installation and distribution easier, but the core product is the skill itself: a maintenance-debt cleanup protocol for task closure.
+`Codex Simplify` is a small skill bundle for task closure. This repository intentionally ships only the two skills, the `AGENTS.md` gate snippet, and protocol notes.
 
 ## At A Glance
 
-| Area | Default path |
+| Area | Path |
 |---|---|
 | Entry skill | [`skills/using-simplify/SKILL.md`](./skills/using-simplify/SKILL.md) |
 | Cleanup protocol | [`skills/simplify/SKILL.md`](./skills/simplify/SKILL.md) |
+| Gate snippet | [`examples/AGENTS.snippet.md`](./examples/AGENTS.snippet.md) |
+| Protocol history | [`CHANGELOG.md`](./CHANGELOG.md) |
 | Review modes | Lite / Standard / Strict |
-| Best Windows setup | Skill + `AGENTS.md` gate |
-| Best macOS/Linux setup | Skill + `AGENTS.md` gate + optional Codex `Stop` hook |
-| What the plugin adds | Easier install, marketplace entry, skill mirror, optional gates |
+| Recommended setup | Copy both skills and append the gate snippet |
 
-## What It Does
+## Versioning And Upgrades
 
-When a code task is being wrapped up, the layered workflow is:
+Current protocol version: `0.2.1`
 
-- `using-simplify` detects finish-line conditions
-- `simplify` runs the cleanup protocol
+Version metadata intentionally lives in the skill body plus [CHANGELOG.md](./CHANGELOG.md). The skill frontmatter stays limited to `name` and `description` for Codex skill compatibility.
 
-The cleanup protocol asks the main agent to:
+Upgrade rule:
 
-- classify the task as `feature`, `refactor`, or `bugfix`
-- review the current task scope through the right tracks
-- merge findings into `must_fix`, `fix_if_cheap`, and `note_only`
-- rerun verification before claiming completion
+- replace [`skills/using-simplify/SKILL.md`](./skills/using-simplify/SKILL.md) and [`skills/simplify/SKILL.md`](./skills/simplify/SKILL.md) together
+- refresh any installed copy of [`examples/AGENTS.snippet.md`](./examples/AGENTS.snippet.md) when the protocol version changes
+- do not mix router and executor versions
 
-## Outcome Model
+Breaking-change rule:
 
-Decide closure in this order:
+- bump the major version when mode-selection order, router-to-executor handoff fields, task taxonomy, finding contract semantics, or required closure reporting changes in a way that alters agent behavior
+- use minor versions for additive clarifications or new objective signals that preserve the same core contract
+- use patch versions for wording or packaging cleanup that does not change expected execution behavior
 
-1. `Skip` when there is no meaningful behavior-affecting diff
-2. `Strict` when any high-risk signal is present
-3. `Lite` when the change is local and low-risk
-4. `Standard` for everything else
+## Repository Shape
+
+This repo ships:
+
+- [using-simplify](./skills/using-simplify/SKILL.md): finish-line router
+- [simplify](./skills/simplify/SKILL.md): cleanup protocol executor
+- [AGENTS.snippet.md](./examples/AGENTS.snippet.md): optional instruction-layer gate
+- [CHANGELOG.md](./CHANGELOG.md): protocol history
+
+## Manual Install
+
+From a local clone of this repository:
+
+Windows PowerShell:
+
+```powershell
+New-Item -ItemType Directory -Force "$HOME\.codex\skills" | Out-Null
+Copy-Item -Recurse -Force .\skills\using-simplify "$HOME\.codex\skills\"
+Copy-Item -Recurse -Force .\skills\simplify "$HOME\.codex\skills\"
+New-Item -ItemType File -Force "$HOME\.codex\AGENTS.md" | Out-Null
+Get-Content .\examples\AGENTS.snippet.md | Add-Content "$HOME\.codex\AGENTS.md"
+```
+
+macOS/Linux:
+
+```bash
+mkdir -p ~/.codex/skills
+cp -R skills/using-simplify ~/.codex/skills/
+cp -R skills/simplify ~/.codex/skills/
+touch ~/.codex/AGENTS.md
+cat examples/AGENTS.snippet.md >> ~/.codex/AGENTS.md
+```
+
+If you prefer repository-local guidance, append the snippet to a project `AGENTS.md` instead of the global one.
+
+## How It Works
+
+When a code task is being wrapped up:
+
+1. `using-simplify` checks whether `Skip`, `Lite`, `Standard`, or `Strict` applies.
+2. `simplify` reviews the current task scope using the chosen mode.
+3. findings are triaged into `must_fix`, `fix_if_cheap`, and `note_only`.
+4. the affected path is re-verified before completion is claimed.
 
 `Skip` and `no cleanup needed` are different:
 
-- `Skip` means there was no meaningful simplify target.
-- `No cleanup needed` means simplify ran, reviewed the task, and found no worthwhile cleanup to apply.
+- `Skip` means there is no meaningful simplify target.
+- `No cleanup needed` means simplify ran and found nothing worth changing.
 
 ## Review Modes
 
 | Outcome | Use when | Result |
 |---|---|---|
 | `Skip` | Docs-only, comments-only, formatting-only, unrelated metadata, or no task-related behavior diff | Say the skip reason explicitly |
-| `Lite` | 1 to 2 local low-risk files, with no shared module, config, dependency, hook, plugin, or verification-scope change | Short review plus the smallest meaningful verification |
+| `Lite` | 1 to 2 local low-risk files, with no shared module, configuration, manifest, or verification-scope change | Short review plus the smallest meaningful verification |
 | `Standard` | Normal feature, bugfix, or refactor closure | Full normal cleanup protocol |
 | `Strict` | Any high-risk or wide-scope change | Stronger review and broader verification |
 
@@ -66,118 +104,16 @@ Strict is triggered by objective signals such as:
 - dependency manifest changes
 - shared or public module changes
 - test changes that expand verification scope
-- hook or plugin manifest changes
+- agent-behavior configuration or manifest changes
 - user-visible behavior changes across multiple call sites
-
-`No cleanup needed` is valid only when you can show evidence that:
-
-- the change stayed local
-- it followed existing repository patterns
-- it did not add unnecessary abstraction, state, or duplication
-- the affected path was already adequately verified
-
-Core tracks:
-
-- `repo_fit`
-- `quality`
-- `reuse`
-- `blast_radius`
-- `efficiency` when performance-relevant
-
-## Quick Start
-
-### Install The Skill Bundle
-
-Windows PowerShell:
-
-```powershell
-irm https://raw.githubusercontent.com/chow651/codex-simplify-plugin/master/scripts/install.ps1 | iex
-```
-
-macOS/Linux:
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/chow651/codex-simplify-plugin/master/scripts/install.sh | bash
-```
-
-### Install With Finish-Line Gate
-
-Windows PowerShell:
-
-```powershell
-& ([scriptblock]::Create((irm https://raw.githubusercontent.com/chow651/codex-simplify-plugin/master/scripts/install.ps1))) -WithGate
-```
-
-macOS/Linux:
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/chow651/codex-simplify-plugin/master/scripts/install.sh | SIMPLIFY_WITH_GATE=1 bash
-```
-
-## Use Modes
-
-| Mode | Best for | What it adds |
-|---|---|---|
-| Skill only | Manual use, existing Codex users | Just the skill |
-| Skill + `AGENTS.md` gate | Windows, stronger finish-line discipline | Appends `Simplify Gate` to `~/.codex/AGENTS.md` |
-| Skill + `AGENTS.md` gate + Codex `Stop` hook | macOS/Linux, extra native stop-time guard | Also writes a `Stop` hook to `~/.codex/hooks.json` |
-
-## Platform Notes
-
-| Platform | Skill | `AGENTS.md` gate | Codex `Stop` hook |
-|---|---|---|---|
-| Windows | Yes | Recommended primary path | Not currently available |
-| macOS/Linux | Yes | Useful | Available as optional extra guard |
-
-OpenAI's Codex hooks documentation currently says hooks are disabled on Windows. For Windows users, the practical enforcement path is the skill plus the `AGENTS.md` gate.
-
-## What The Installer Writes
-
-- plugin: `~/plugins/simplify`
-- marketplace entry: `~/.agents/plugins/marketplace.json`
-- visible skill mirror: `~/.codex/skills/using-simplify/SKILL.md`
-- visible skill mirror: `~/.codex/skills/simplify/SKILL.md`
-- optional instruction gate: `~/.codex/AGENTS.md`
-- optional Codex hook: `~/.codex/hooks.json`
-
-## Hook Config
-
-Codex hook discovery lives in `~/.codex/hooks.json` or `<repo>/.codex/hooks.json`, not in the plugin manifest.
-
-This repo ships:
-
-- [using-simplify](./skills/using-simplify/SKILL.md): finish-line router skill
-- [SKILL.md](./skills/simplify/SKILL.md): the actual simplify meta-skill
-- [AGENTS.snippet.md](./examples/AGENTS.snippet.md): instruction-layer finish-line gate
-- [simplify_stop_gate.py](./scripts/simplify_stop_gate.py): Codex `Stop` hook script
-- [codex.hooks.json](./examples/codex.hooks.json): example Codex hook config
-
-The hook is optional. The skill is the core product.
 
 ## Typical Workflow
 
-1. Finish the main implementation and run your normal verification.
-2. Let `using-simplify` decide `Skip`, `Strict`, `Lite`, or `Standard`.
-3. If not skipped, run `simplify` on the current diff.
-4. Run the matching review tracks.
-5. Either conclude `no cleanup needed` with evidence or fix worthwhile findings.
-6. Re-verify before stopping.
-
-## Worked Examples
-
-- [Feature / Standard: one-command installers](./examples/cases/feature-standard-closure.md)
-- [Bugfix: older PowerShell installer compatibility](./examples/cases/bugfix-closure.md)
-- [Lite / no cleanup needed: local installer compatibility fix](./examples/cases/lite-no-cleanup-needed.md)
-- [Strict: routing and protocol layering across plugin, hook, and skills](./examples/cases/strict-closure.md)
-
-## Why This Repo Is A Plugin At All
-
-Because plugins are useful for **distribution**, not because the skill needs a plugin to work.
-
-If you already know how to manage Codex skills manually, you can think of this repo as:
-
-- a layered simplify skill system
-- plus a convenience installer
+1. Finish the main implementation and run normal verification.
+2. Let `using-simplify` pick the mode.
+3. Run `simplify` on the current task scope.
+4. Fix worthwhile findings.
+5. Re-run verification and then close the task.
 
 ## License
 

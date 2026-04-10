@@ -23,6 +23,12 @@ You do not have the option to silently skip this.
 
 It does not perform the cleanup protocol itself. Its job is to detect closure conditions, choose the right simplify mode, and route into the full `simplify` skill.
 
+## Protocol Version
+
+Current router/executor contract version: `0.2.1`
+
+Upgrade `using-simplify`, `simplify`, and any installed gate text together. Do not mix protocol versions across those layers.
+
 ## Invocation Contract
 
 In the current environment, `invoke simplify` means:
@@ -96,8 +102,8 @@ Use `Strict` when any of these is true:
 - dependency manifests changed
 - tests changed in a way that expands or reshapes verification scope
 - shared or public modules changed
-- hook configuration changed
-- plugin manifest changed
+- agent behavior configuration changed
+- manifest files that change tool or runtime behavior changed
 - user-visible behavior changed across multiple call sites
 
 ### Lite Signals
@@ -107,7 +113,7 @@ Use `Lite` only when all of these are true:
 - the change is local and low-risk
 - 1 or 2 files are touched
 - no shared or public module is changed
-- no build, runtime, dependency, hook, or plugin configuration is changed
+- no build, runtime, dependency, agent-behavior, or manifest configuration is changed
 - no test strategy change is needed
 
 Typical Lite cases:
@@ -146,8 +152,8 @@ A meaningful diff means task-related changes to behavior-affecting files such as
 - tests
 - scripts
 - build or runtime configuration
-- hook configuration
-- plugin manifest
+- agent behavior configuration
+- manifest files that change tool or runtime behavior
 - prompts or instructions that change agent behavior
 
 It does not mean:

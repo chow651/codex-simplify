@@ -17,6 +17,12 @@ Its job is to reduce future maintenance debt before you treat the current task a
 
 This skill is the execution protocol that runs after `using-simplify`, a user request, or a standing instruction has already decided simplify should happen.
 
+## Protocol Version
+
+Current protocol version: `0.2.1`
+
+Keep `simplify` aligned with the same-version `using-simplify` router and any installed gate text that mirrors this protocol.
+
 ## Modes
 
 Simplify runs in one of three modes:
@@ -63,8 +69,8 @@ A meaningful diff means task-related changes to behavior-affecting files such as
 - tests
 - scripts
 - build or runtime configuration
-- hook configuration
-- plugin manifest
+- agent behavior configuration
+- manifest files that change tool or runtime behavior
 - prompts or instructions that change agent behavior
 
 It does not mean:
